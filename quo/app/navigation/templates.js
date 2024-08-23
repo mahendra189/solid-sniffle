@@ -1,21 +1,24 @@
-import { ScrollView, Text, View } from "react-native"
+import { ScrollView, StyleSheet, Text, View } from "react-native"
 import { Button, Icon, SearchBar } from '@rneui/themed';
-import { useState } from "react";
+import { useContext, useState } from "react";
 import colors from "../constants/colors";
-const Templates = ({navigation}) => {
+import data from "../constants/data";
+import CButton from "../components/CButton";
+import { GlobalContext } from "../context/GlobalContext";
+const Templates = ({ navigation }) => {
     const [value, setValue] = useState("")
-    const [templates, setTemplates] = useState([])
+    const {templates, setTemplates} = useContext(GlobalContext);
     const createTemplate = () => {
         navigation.navigate('Create Templates')
     }
     console.log(templates)
     return (
-        <View>
+        <View style={styles.container}>
 
             <SearchBar
                 platform="android"
                 containerStyle={{
-                    margin: 10,
+                    // marginT: 10,
                     borderRadius: 10
                 }}
                 inputContainerStyle={{}}
@@ -25,54 +28,36 @@ const Templates = ({navigation}) => {
                 loadingProps={{}}
                 onChangeText={newVal => setValue(newVal)}
                 onClearText={() => console.log(onClearText())}
-                placeholder="Type query here..."
+                placeholder="Search a template..."
                 placeholderTextColor="#888"
                 cancelButtonTitle="Cancel"
                 cancelButtonProps={{}}
                 // onCancel={() => console.log(onCancel())}
                 value={value}
             />
-            <Button
-                buttonStyle={{
-                    width: 150,
-                    backgroundColor: colors.primary,
-                }}
-                containerStyle={{ marginHorizontal: 10 }}
-                disabledStyle={{
-                    borderWidth: 2,
-                    borderColor: "#00F"
-                }}
-                disabledTitleStyle={{ color: "#00F" }}
-                linearGradientProps={null}
-                icon={<Icon name="add" size={15} color={colors.secondary} />}
-                iconContainerStyle={{ background: colors.secondary }}
-                loadingProps={{ animating: true }}
-                loadingStyle={{}}
-                onPress={createTemplate}
-                title="Create"
-                titleProps={{
-                }}
-                titleStyle={{
-                    marginHorizontal: 5,
-                    color: colors.secondary,
-
-                }}
-            />
+            <CButton color={colors.primary} title="Create" onPress={createTemplate} />
             <ScrollView>
-
-                {templates.map(() => (
-                    <Item />
+                {templates.map((item) => (
+                    <Item key={item.id} name={item.name} des={item.des} />
                 ))}
             </ScrollView>
         </View>
     )
 }
-const Item = () => {
+
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        // backgroundColor: colors.background,
+        padding: 10,
+    }
+})
+const Item = ({ name, des }) => {
     return (
         <View
             style={{
                 backgroundColor: colors.background,
-                marginHorizontal: 10,
                 marginTop: 10,
                 padding: 10,
                 borderRadius: 10,
@@ -86,7 +71,7 @@ const Item = () => {
                     }
                 }
             >
-                Quotation
+                {name}
             </Text>
             <Text
                 style={
@@ -95,7 +80,7 @@ const Item = () => {
                     }
                 }
             >
-                Description
+                {des}
             </Text>
         </View>
     )
