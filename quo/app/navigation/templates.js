@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native"
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import { Button, Icon, SearchBar } from '@rneui/themed';
 import { useContext, useState } from "react";
 import colors from "../constants/colors";
@@ -7,11 +7,10 @@ import CButton from "../components/CButton";
 import { GlobalContext } from "../context/GlobalContext";
 const Templates = ({ navigation }) => {
     const [value, setValue] = useState("")
-    const {templates, setTemplates} = useContext(GlobalContext);
+    const { templates, setTemplates } = useContext(GlobalContext);
     const createTemplate = () => {
         navigation.navigate('Create Templates')
     }
-    console.log(templates)
     return (
         <View style={styles.container}>
 
@@ -38,7 +37,7 @@ const Templates = ({ navigation }) => {
             <CButton color={colors.primary} title="Create" onPress={createTemplate} />
             <ScrollView>
                 {templates.map((item) => (
-                    <Item key={item.id} name={item.name} des={item.des} />
+                    <Item key={item.id} name={item.name} des={item.des} navigation={navigation} to={'EditorScreen'} value={item.columns} />
                 ))}
             </ScrollView>
         </View>
@@ -53,9 +52,10 @@ const styles = StyleSheet.create({
         padding: 10,
     }
 })
-const Item = ({ name, des }) => {
+const Item = ({ name, des, navigation, to, value }) => {
     return (
-        <View
+        <TouchableOpacity
+            onPress={() => navigation.navigate(to, {'columns':value})}
             style={{
                 backgroundColor: colors.background,
                 marginTop: 10,
@@ -82,7 +82,7 @@ const Item = ({ name, des }) => {
             >
                 {des}
             </Text>
-        </View>
+        </TouchableOpacity>
     )
 }
 export default Templates

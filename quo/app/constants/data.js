@@ -6,7 +6,7 @@ export default [
         'columns': [
             "Sr",
             "Particular",
-            "Rate",
+            "Price",
         ]
     },
     {
