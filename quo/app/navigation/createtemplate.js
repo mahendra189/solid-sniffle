@@ -5,20 +5,13 @@ import colors from '../constants/colors'; // Adjust the path as needed
 import TableView from '../components/TableView';
 import CButton from '../components/CButton';
 import { GlobalContext } from '../context/GlobalContext';
+import { generateUniqueId } from '../utils/uniqueid';
+
 const CreateTemplates = ({ navigation }) => {
     const {templates,setTemplates} = useContext(GlobalContext)
     const [name, setName] = useState('')
     const [des, setDes] = useState('')
-    const [columns, setColumns] = useState([
-        "Sr",
-        "Particular",
-        "Width",
-        "Height",
-        "Qnty",
-        "Unit",
-        "Rate",
-        "Amount"
-    ]);
+    const [columns, setColumns] = useState([]);
     const [columnName, setColumnName] = useState('');
 
     const addColumn = () => {
@@ -30,6 +23,7 @@ const CreateTemplates = ({ navigation }) => {
 
     const saveTemplate = () => {
         let newTemplate = {
+            'id':generateUniqueId(),
             'name':name,
             'des':des,
             'columns':columns
