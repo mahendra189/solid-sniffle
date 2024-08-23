@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, TextInput, Button, ScrollView, StyleSheet, Alert } from 'react-native';
 import { Table, Row, Rows } from 'react-native-table-component';
-import RNHTMLtoPDF from 'react-native-html-to-pdf';
-// Sample data and columns
+import * as Print from 'expo-print'
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 const sampleItems = [
     { Sr: 'Table', Particular: '2', Price: '$200' },
     { Sr: 'Chair', Particular: '4', Price: '$100' },
@@ -13,7 +14,6 @@ const EditorScreen = ({ navigation, route }) => {
     const { columns } = route.params;
     const [tablecolumns, setTableColumns] = useState(columns || []);
     const [items, setItems] = useState(sampleItems);
-    const [newRow, setNewRow] = useState({});
 
     const handleInputChange = (index, column, value) => {
         const updatedItems = [...items];
@@ -25,20 +25,7 @@ const EditorScreen = ({ navigation, route }) => {
         const emptyRow = tablecolumns.reduce((acc, col) => ({ ...acc, [col]: '' }), {});
         setItems([...items, emptyRow]);
     };
-
-    const tableHead = [...tablecolumns];
-    const tableData = items.map((item, rowIndex) =>
-        tablecolumns.map((col) => (
-            <TextInput
-                key={col}
-                style={styles.input}
-                value={item[col]}
-                onChangeText={(text) => handleInputChange(rowIndex, col, text)}
-            />
-        ))
-    );
-
-    const generatePDF = async () => {
+    const generateAndSavePDF = async () => {
         try {
             const htmlContent = `
                 <html>
@@ -76,20 +63,46 @@ const EditorScreen = ({ navigation, route }) => {
                 </html>
             `;
 
-            const options = {
-                html: htmlContent,
-                fileName: 'template',
-                directory: 'Documents',
-            };
+            // Generate PDF
+            const { uri } = await Print.printToFileAsync({ html: htmlContent });
 
-            const file = await RNHTMLtoPDF.convert(options);
-            Alert.alert('PDF Created', `File saved to ${file.filePath}`);
+            // Define the file path in the app's document directory
+            const fileUri = FileSystem.documentDirectory + 'sample.pdf';
+
+            // Move the generated PDF to the document directory
+            await FileSystem.moveAsync({
+                from: uri,
+                to: fileUri,
+            });
+
+            // Notify user about the file location
+            Alert.alert('PDF Saved', `File saved to: ${fileUri}`);
+
+            // Share the PDF
+            if (await Sharing.isAvailableAsync()) {
+                await Sharing.shareAsync(fileUri);
+            } else {
+                Alert.alert('Error', 'Sharing is not available on this platform');
+            }
         } catch (error) {
-            Alert.alert('Error', 'Failed to create PDF');
+            console.error('Error generating or sharing PDF:', error);
+            Alert.alert('Error', 'Failed to create or share PDF');
         }
     };
 
-    // Define column widths, adjust as needed
+
+    const tableHead = [...tablecolumns];
+    const tableData = items.map((item, rowIndex) =>
+        tablecolumns.map((col) => (
+            <TextInput
+                key={col}
+                style={styles.input}
+                value={item[col]}
+                onChangeText={(text) => handleInputChange(rowIndex, col, text)}
+            />
+        ))
+    );
+
     const columnWidth = 100; // Width for each column
     const widthArr = tablecolumns.map(() => columnWidth);
 
@@ -115,7 +128,7 @@ const EditorScreen = ({ navigation, route }) => {
 
             <Button title="Add Row" onPress={addRow} />
             <Button title="Save Template" onPress={() => navigation.goBack()} />
-            <Button title="Export as PDF" onPress={generatePDF} />
+            <Button title="Export as PDF" onPress={generateAndSavePDF} />
         </ScrollView>
     );
 };
